@@ -1,0 +1,14 @@
+{
+  "name": "hireai-platform",
+  "version": "1.0.0",
+  "description": "AI-powered hiring platform for technical assessments",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "lint": "cd frontend && npm run lint"
+  },
+  "keywords": ["hiring", "ai", "assessment", "technical"],
+  "author": "",
+  "license": "MIT"
+}
