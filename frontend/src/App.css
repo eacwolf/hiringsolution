@@ -14,7 +14,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #e3e1e7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -36,7 +36,7 @@
   filter: drop-shadow(0 0 2em #646cffaa);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #d9dfe1aa);
 }
 
 @keyframes logo-spin {
@@ -148,7 +148,7 @@
 
 /* Button Styling */
 .btn {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #2563eb, #e9e6ef);
   color: white;
   padding: 12px 30px;
   border: none;

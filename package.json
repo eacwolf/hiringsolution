@@ -4,9 +4,15 @@
   "description": "AI-powered hiring platform for technical assessments",
   "scripts": {
     "dev": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\"",
     "build": "cd frontend && npm run build",
     "preview": "cd frontend && npm run preview",
-    "lint": "cd frontend && npm run lint"
+    "lint": "cd frontend && npm run lint",
+    "backend": "cd backend && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   },
   "keywords": ["hiring", "ai", "assessment", "technical"],
   "author": "",

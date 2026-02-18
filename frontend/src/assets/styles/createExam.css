@@ -4,9 +4,10 @@
 
 .create-exam-wrapper {
   width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 20px 15px;
+  min-height: calc(100vh - 80px);
+  display: block;
+  padding: 28px 24px;
+  background: linear-gradient(180deg, rgba(248,250,255,0.6), rgba(255,255,255,0.85));
 }
 
 .exam-header {
@@ -33,17 +34,48 @@
 
 .exam-container {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(2,6,23,0.06);
+  overflow: visible;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: block;
 }
 
 .exam-form {
-  padding: 25px;
+  padding: 22px 28px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+.exam-main {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
+
+.exam-side {
+  padding-left: 18px;
+  border-left: 1px solid var(--border-color);
+  align-self: start;
+  position: sticky;
+  top: 120px;
+}
+
+.exam-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 18px 0 6px 0;
+}
+
+/* Make summary card compact and sticky */
+.summary-card { position: relative }
+.summary-grid { grid-template-columns: 1fr; gap: 10px }
 
 /* Form Section */
 .form-section {

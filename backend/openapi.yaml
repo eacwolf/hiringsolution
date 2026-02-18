@@ -1,0 +1,265 @@
+openapi: 3.0.1
+info:
+  title: HireAI - Backend API
+  version: 1.0.0
+  description: API for exam generation, submissions and evaluation
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /api/exams:
+    post:
+      summary: Create a new exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamCreate'
+      responses:
+        '201':
+          description: Exam created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamResponse'
+
+  /api/exams/{examId}/generate:
+    post:
+      summary: Trigger AI question generation for an exam
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                override:
+                  type: boolean
+      responses:
+        '202':
+          description: Generation job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+
+  /api/jobs/{jobId}:
+    get:
+      summary: Get generation job status and result
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+
+  /api/submissions:
+    post:
+      summary: Submit candidate code for evaluation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmissionRequest'
+      responses:
+        '201':
+          description: Submission queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResponse'
+
+  /api/evaluations/{submissionId}:
+    get:
+      summary: Get evaluation result for a submission
+      parameters:
+        - name: submissionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResult'
+
+  /api/exams/{examId}/ranking:
+    get:
+      summary: Get ranked candidates for an exam
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ranking list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rankings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        candidateId:
+                          type: string
+                        score:
+                          type: number
+                        rank:
+                          type: integer
+
+components:
+  schemas:
+    ExamCreate:
+      type: object
+      required: [title, domain, skills, difficulty, numQuestions]
+      properties:
+        title:
+          type: string
+        domain:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard]
+        numQuestions:
+          type: integer
+        durationMinutes:
+          type: integer
+        languages:
+          type: array
+          items:
+            type: string
+
+    ExamResponse:
+      type: object
+      properties:
+        examId:
+          type: string
+        jobId:
+          type: string
+
+    JobResponse:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+
+    JobStatus:
+      type: object
+      properties:
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [queued, running, failed, completed]
+        result:
+          type: object
+          description: generation payload (questions + metadata)
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        statement:
+          type: string
+        constraints:
+          type: string
+        referenceSolution:
+          type: string
+        testcases:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestCase'
+
+    TestCase:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [unit, edge, stress]
+        input:
+          type: string
+        expected:
+          type: string
+        timeoutMs:
+          type: integer
+
+    SubmissionRequest:
+      type: object
+      required: [questionId, candidateId, language, code]
+      properties:
+        questionId:
+          type: string
+        candidateId:
+          type: string
+        language:
+          type: string
+        code:
+          type: string
+
+    SubmissionResponse:
+      type: object
+      properties:
+        submissionId:
+          type: string
+        status:
+          type: string
+
+    EvaluationResult:
+      type: object
+      properties:
+        submissionId:
+          type: string
+        correctness:
+          type: number
+        runtimeMs:
+          type: number
+        memoryKb:
+          type: number
+        perTestcase:
+          type: array
+          items:
+            type: object
+            properties:
+              testcaseId:
+                type: string
+              pass:
+                type: boolean
+              stdout:
+                type: string
+              stderr:
+                type: string
+        compositeScore:
+          type: number

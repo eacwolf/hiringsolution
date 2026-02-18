@@ -1,6 +1,6 @@
 const STORAGE_KEY = "hireai_latest_questions";
 
-async function fetchWithTimeout(url, options = {}, timeout = 15000) {
+async function fetchWithTimeout(url, options = {}, timeout = 30000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -78,20 +78,28 @@ function mockGenerate(formData) {
 }
 
 export async function generateQuestions(formData) {
-  // Try calling backend endpoint if available
+  // Try calling backend endpoint first
+  const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
   try {
-    const res = await fetchWithTimeout("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    }, 20000);
+    const res = await fetchWithTimeout(
+      `${backendUrl}/api/generate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      },
+      30000
+    );
 
-    if (!res.ok) throw new Error("Non-OK response");
+    if (!res.ok) {
+      throw new Error(`Backend returned ${res.status}: ${res.statusText}`);
+    }
     const payload = await res.json();
     // save and return
     saveLatest(payload);
     return payload;
   } catch (err) {
+    console.warn("Backend API failed, using fallback mock:", err.message);
     // fallback to mock generator for offline/demo mode
     const fallback = mockGenerate(formData);
     saveLatest(fallback);

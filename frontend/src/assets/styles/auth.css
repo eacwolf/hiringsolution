@@ -11,7 +11,7 @@
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-primary); /* clean white background */
   position: relative;
   overflow: hidden;
 }
@@ -29,33 +29,34 @@
   animation: float 6s ease-in-out infinite;
 }
 
+.auth-container::before {
+  /* subtle neutral accents for a professional look */
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 50%;
+  top: -30px;
+  right: -30px;
+  animation: float 8s ease-in-out infinite;
+}
 .auth-container::after {
   content: '';
   position: absolute;
-  width: 300px;
-  height: 300px;
-  background: rgba(255, 255, 255, 0.05);
+  width: 180px;
+  height: 180px;
+  background: rgba(15, 23, 42, 0.02);
   border-radius: 50%;
-  bottom: -30px;
-  left: -30px;
-  animation: float 8s ease-in-out infinite reverse;
+  bottom: -20px;
+  left: -20px;
+  animation: float 10s ease-in-out infinite reverse;
 }
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(20px);
-  }
-}
-
-/* Left side - Branding (hidden on mobile) */
 .auth-branding {
   display: none;
   flex: 1;
   padding: 40px;
-  color: white;
+  color: var(--text-primary);
   position: relative;
   z-index: 1;
 }
@@ -72,7 +73,7 @@
   font-size: 48px;
   font-weight: bold;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  background: linear-gradient(135deg, #111827, #374151);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -125,12 +126,12 @@
 /* Auth form card */
 .auth-card {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  padding: 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 36px;
   width: 100%;
-  max-width: 420px;
-  animation: slideUp 0.6s ease-out;
+  max-width: 440px;
+  animation: slideUp 0.45s ease-out;
 }
 
 @keyframes slideUp {
@@ -370,14 +371,14 @@
 }
 
 .forgot-link {
-  color: #f59e0b;
+  color: #111827; /* professional solid black */
   cursor: pointer;
   font-weight: 600;
-  transition: color 0.3s ease;
+  transition: color 0.15s ease;
 }
 
 .forgot-link:hover {
-  color: #d97706;
+  color: #000000;
 }
 
 /* Success message */
@@ -454,7 +455,7 @@
 
 @media (max-width: 768px) {
   body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-primary);
   }
 
   .auth-container {

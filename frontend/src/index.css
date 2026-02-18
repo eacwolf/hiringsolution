@@ -3,9 +3,9 @@
   line-height: 1.6;
   font-weight: 400;
 
-  --primary-color: #2563eb;
-  --primary-dark: #1e40af;
-  --secondary-color: #7c3aed;
+  --primary-color: #c8cdd8;
+  --primary-dark: #e4e9ec;
+  --secondary-color: #dedbe2;
   --accent-color: #06b6d4;
   --success-color: #10b981;
   --error-color: #ef4444;
@@ -41,7 +41,7 @@ html, body, #root {
 }
 
 body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #e6e4e9 100%);
   min-height: 100vh;
   color: var(--text-primary);
 }
