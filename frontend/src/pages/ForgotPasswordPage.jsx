@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { sendLoginOTP } from "../services/authService.js";
 import "../assets/styles/auth.css";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
-  const [step, setStep] = useState("email"); // 'email' or 'reset'
-  const [resetCode, setResetCode] = useState("");
+  const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [step, setStep] = useState("email"); // 'email', 'otp', or 'reset'
+  const [otpExpiry, setOtpExpiry] = useState(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
 
   const validateEmail = () => {
     const newErrors = {};
@@ -28,12 +31,19 @@ export default function ForgotPasswordPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateOTP = () => {
+    const newErrors = {};
+    if (!otp.trim()) {
+      newErrors.otp = "OTP is required";
+    } else if (!/^\d{6}$/.test(otp)) {
+      newErrors.otp = "OTP must be 6 digits";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const validateReset = () => {
     const newErrors = {};
-
-    if (!resetCode.trim()) {
-      newErrors.resetCode = "Verification code is required";
-    }
 
     if (!newPassword) {
       newErrors.newPassword = "New password is required";
@@ -51,7 +61,7 @@ export default function ForgotPasswordPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendReset = async (e) => {
+  const handleSendOTP = async (e) => {
     e.preventDefault();
 
     if (!validateEmail()) {
@@ -60,16 +70,53 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await sendLoginOTP(email);
+      setSuccessMessage("OTP sent to your email. Please check your inbox.");
+      setOtpExpiry(Date.now() + 10 * 60 * 1000); // 10 minutes
+      setStep("otp");
 
-      setSuccessMessage(
-        `Reset code sent to ${email}. Check your inbox and spam folder.`
-      );
-      setStep("reset");
-      setSuccessMessage("");
+      // Start countdown timer
+      setResendCountdown(60);
+      const timer = setInterval(() => {
+        setResendCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      setErrors({ general: "Failed to send reset code. Please try again." });
+      setErrors({ general: error.message || "Failed to send OTP" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+
+    if (!validateOTP()) {
+      return;
+    }
+
+    if (otpExpiry && Date.now() > otpExpiry) {
+      setErrors({ general: "OTP has expired. Please request a new one." });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // OTP verified - move to password reset
+      setSuccessMessage("OTP verified! Please set your new password.");
+      setTimeout(() => {
+        setStep("reset");
+        setSuccessMessage("");
+      }, 500);
+    } catch (error) {
+      setErrors({ general: "OTP verification failed" });
     } finally {
       setLoading(false);
     }
@@ -84,7 +131,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      // Simulate API call
+      // Simulate API call to reset password
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setSuccessMessage("Password reset successfully! Redirecting to login...");
@@ -93,6 +140,36 @@ export default function ForgotPasswordPage() {
       }, 1500);
     } catch (error) {
       setErrors({ general: "Failed to reset password. Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async (e) => {
+    e.preventDefault();
+    if (resendCountdown > 0) return;
+
+    setLoading(true);
+    try {
+      await sendLoginOTP(email);
+      setSuccessMessage("New OTP sent to your email.");
+      setOtp("");
+      setOtpExpiry(Date.now() + 10 * 60 * 1000);
+      setResendCountdown(60);
+
+      const timer = setInterval(() => {
+        setResendCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      setErrors({ general: error.message });
     } finally {
       setLoading(false);
     }
@@ -109,7 +186,7 @@ export default function ForgotPasswordPage() {
         </p>
         <ul className="brand-features">
           <li>Fast and secure recovery</li>
-          <li>Password reset via email</li>
+          <li>Password reset via OTP verification</li>
           <li>Instant account access</li>
           <li>Enhanced security</li>
         </ul>
@@ -120,12 +197,14 @@ export default function ForgotPasswordPage() {
         <div className="auth-card">
           <div className="auth-header">
             <h2>
-              {step === "email" ? "Reset Password" : "Create New Password"}
+              {step === "email" ? "Reset Password" : step === "otp" ? "Verify OTP" : "Create New Password"}
             </h2>
             <p>
               {step === "email"
-                ? "Enter your email to receive a reset code"
-                : "Enter the code and your new password"}
+                ? "Enter your email to receive an OTP"
+                : step === "otp"
+                ? "Enter the OTP sent to your email"
+                : "Enter your new password"}
             </p>
           </div>
 
@@ -136,8 +215,8 @@ export default function ForgotPasswordPage() {
             <div className="success-message">{successMessage}</div>
           )}
 
-          {step === "email" ? (
-            <form onSubmit={handleSendReset}>
+          {step === "email" && (
+            <form onSubmit={handleSendOTP}>
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
                 <input
@@ -149,6 +228,8 @@ export default function ForgotPasswordPage() {
                     setEmail(e.target.value);
                     if (errors.email) setErrors({ ...errors, email: "" });
                   }}
+                  className={errors.email ? "input-error" : ""}
+                  disabled={loading}
                 />
                 {errors.email && (
                   <span className="field-error">{errors.email}</span>
@@ -158,33 +239,87 @@ export default function ForgotPasswordPage() {
               <button type="submit" className="btn-submit" disabled={loading}>
                 {loading ? (
                   <>
-                    <span className="spinner"></span>Sending...
+                    <span className="spinner"></span>Sending OTP...
                   </>
                 ) : (
-                  "Send Reset Code"
+                  "Send OTP"
                 )}
               </button>
             </form>
-          ) : (
-            <form onSubmit={handleResetPassword}>
+          )}
+
+          {step === "otp" && (
+            <form onSubmit={handleVerifyOTP}>
               <div className="form-group">
-                <label htmlFor="code">Verification Code</label>
+                <label htmlFor="otp">Enter OTP</label>
                 <input
-                  id="code"
+                  id="otp"
                   type="text"
-                  placeholder="Enter 6-digit code"
-                  value={resetCode}
+                  placeholder="000000"
+                  value={otp}
                   onChange={(e) => {
-                    setResetCode(e.target.value);
-                    if (errors.resetCode)
-                      setErrors({ ...errors, resetCode: "" });
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setOtp(val);
+                    if (errors.otp) setErrors({ ...errors, otp: "" });
                   }}
+                  maxLength="6"
+                  className={errors.otp ? "input-error" : ""}
+                  disabled={loading}
                 />
-                {errors.resetCode && (
-                  <span className="field-error">{errors.resetCode}</span>
+                {errors.otp && (
+                  <span className="field-error">{errors.otp}</span>
                 )}
               </div>
 
+              <div className="otp-info">
+                <p>
+                  OTP expires in:{" "}
+                  {otpExpiry
+                    ? Math.ceil((otpExpiry - Date.now()) / 1000) > 0
+                      ? `${Math.ceil((otpExpiry - Date.now()) / 1000)} seconds`
+                      : "Expired"
+                    : "N/A"}
+                </p>
+              </div>
+
+              <button type="submit" className="btn-submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>Verifying...
+                  </>
+                ) : (
+                  "Verify OTP"
+                )}
+              </button>
+
+              <div className="otp-actions">
+                <button
+                  type="button"
+                  className="resend-link"
+                  onClick={handleResendOTP}
+                  disabled={resendCountdown > 0 || loading}
+                >
+                  {resendCountdown > 0
+                    ? `Resend in ${resendCountdown}s`
+                    : "Resend OTP"}
+                </button>
+                <button
+                  type="button"
+                  className="back-link"
+                  onClick={() => {
+                    setStep("email");
+                    setOtp("");
+                    setErrors({});
+                  }}
+                >
+                  Change Email
+                </button>
+              </div>
+            </form>
+          )}
+
+          {step === "reset" && (
+            <form onSubmit={handleResetPassword}>
               <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
                 <div className="form-input-wrapper">
@@ -198,11 +333,14 @@ export default function ForgotPasswordPage() {
                       if (errors.newPassword)
                         setErrors({ ...errors, newPassword: "" });
                     }}
+                    className={errors.newPassword ? "input-error" : ""}
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     className="password-toggle"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
                   >
                     {showPassword ? "👁" : "👁‍🗨"}
                   </button>
@@ -225,6 +363,8 @@ export default function ForgotPasswordPage() {
                       if (errors.confirmPassword)
                         setErrors({ ...errors, confirmPassword: "" });
                     }}
+                    className={errors.confirmPassword ? "input-error" : ""}
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -232,6 +372,7 @@ export default function ForgotPasswordPage() {
                     onClick={() =>
                       setShowConfirmPassword(!showConfirmPassword)
                     }
+                    disabled={loading}
                   >
                     {showConfirmPassword ? "👁" : "👁‍🗨"}
                   </button>
@@ -246,7 +387,7 @@ export default function ForgotPasswordPage() {
               <button type="submit" className="btn-submit" disabled={loading}>
                 {loading ? (
                   <>
-                    <span className="spinner"></span>Resetting...
+                    <span className="spinner"></span>Resetting Password...
                   </>
                 ) : (
                   "Reset Password"

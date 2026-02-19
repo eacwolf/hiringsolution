@@ -40,10 +40,29 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Retrieve stored user data (for demo - replace with API call in production)
+      const storedUsers = JSON.parse(localStorage.getItem("hireai_users") || "{}");
+      const user = storedUsers[email];
 
-      setSuccessMessage("Login successful! Redirecting...");
+      if (!user) {
+        setErrors({ general: "Email not found. Please register first." });
+        setLoading(false);
+        return;
+      }
+
+      // Check if password matches (in production, use bcrypt comparison on server)
+      if (user.password !== password) {
+        setErrors({ general: "❌ Incorrect password. Please try again." });
+        setLoading(false);
+        return;
+      }
+
+      // Password correct - proceed with login
+      if (rememberMe) {
+        localStorage.setItem("rememberMe", email);
+      }
+
+      setSuccessMessage("✓ Login successful! Redirecting...");
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
@@ -99,6 +118,7 @@ export default function LoginPage() {
                   if (errors.email) setErrors({ ...errors, email: "" });
                 }}
                 className={errors.email ? "input-error" : ""}
+                disabled={loading}
               />
               {errors.email && (
                 <span className="field-error">{errors.email}</span>
@@ -118,12 +138,14 @@ export default function LoginPage() {
                     if (errors.password) setErrors({ ...errors, password: "" });
                   }}
                   className={errors.password ? "input-error" : ""}
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   title={showPassword ? "Hide password" : "Show password"}
+                  disabled={loading}
                 >
                   {showPassword ? "👁" : "👁‍🗨"}
                 </button>
@@ -140,6 +162,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={loading}
                 />
                 <label htmlFor="remember">Remember me</label>
               </div>
@@ -147,6 +170,7 @@ export default function LoginPage() {
                 type="button"
                 className="forgot-link"
                 onClick={() => navigate("/forgot-password")}
+                disabled={loading}
               >
                 Forgot password?
               </button>
@@ -176,3 +200,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

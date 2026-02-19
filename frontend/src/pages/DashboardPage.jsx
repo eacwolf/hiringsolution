@@ -48,11 +48,17 @@ export default function DashboardPage() {
       </div>
 
       <div className="card" style={{ maxWidth: 1100 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 style={{ margin: 0 }}>Recent Exams</h3>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <button className="btn" onClick={() => navigate("/create-exam")}>+ Create New Exam</button>
-            <button className="btn" onClick={() => navigate("/questions")}>View Generated Questions</button>
+            <button className="btn" onClick={() => navigate("/questions")}>View Questions</button>
+            <button className="btn" onClick={() => navigate("/assessment")} style={{ background: "#10b981" }}>
+              📝 Take Assessment
+            </button>
+            <button className="btn" onClick={() => navigate("/submissions-ranking")} style={{ background: "#f59e0b" }}>
+              🏆 View Rankings
+            </button>
           </div>
         </div>
 

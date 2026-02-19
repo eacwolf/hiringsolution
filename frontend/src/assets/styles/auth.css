@@ -593,6 +593,94 @@
   }
 }
 
+/* ============================================
+   OTP STYLING
+   ============================================ */
+
+#otp {
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 12px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.otp-info {
+  background: #f4f1de;
+  border: 1px solid #e0d5c7;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-size: 13px;
+  color: #333;
+  text-align: center;
+}
+
+.otp-info p {
+  margin: 0;
+}
+
+/* OTP Actions */
+.otp-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  justify-content: space-between;
+}
+
+.resend-link,
+.back-link,
+.forgot-link {
+  display: inline-block;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.resend-link:hover:not(:disabled),
+.back-link:hover:not(:disabled),
+.forgot-link:hover:not(:disabled) {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+.resend-link:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Dark mode OTP styles */
+@media (prefers-color-scheme: dark) {
+  .otp-info {
+    background: #2d3e50;
+    border-color: #3c5266;
+    color: #d1d5db;
+  }
+}
+
+@media (max-width: 768px) {
+  #otp {
+    font-size: 20px;
+    letter-spacing: 8px;
+  }
+
+  .otp-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .resend-link,
+  .back-link {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     background: linear-gradient(135deg, #1e3a8a 0%, #6b21a8 100%);

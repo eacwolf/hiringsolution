@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import generateRoutes from "./routes/generateRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -26,7 +28,9 @@ app.get("/health", (req, res) => {
 });
 
 // API Routes
+app.use("/api/auth", authRoutes);
 app.use("/api", generateRoutes);
+app.use("/api/code", codeExecutionRoutes);
 
 // 404 handler
 app.use((req, res) => {
